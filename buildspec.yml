@@ -2,34 +2,32 @@ version: 0.2
 
 env:
   parameter-store:
-    # CodeBuild securely downloads your private security key from your AWS Parameter Store at runtime
     SSH_KEY: "/prod/ec2/private_key"
 
 phases:
   install:
-  runtime-versions:
-    python: 3.11
+    runtime-versions:
+      python: 3.11
     commands:
-      - echo Setting up secure SSH execution credentials...
+      - echo "Setting up secure SSH environment..."
       - mkdir -p ~/.ssh
       - echo "$SSH_KEY" > ~/.ssh/id_rsa
       - chmod 600 ~/.ssh/id_rsa
-      - echo "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
-      - echo Initializing CI dependency packages...
+      # Using a clean multi-line echo statement to bypass parsing bugs
+      - echo "Host *" > ~/.ssh/config
+      - echo "    StrictHostKeyChecking no" >> ~/.ssh/config
+      - echo "Upgrading local environment dependencies..."
       - python -m pip install --upgrade pip
       - pip install -r requirements.txt
 
   pre_build:
     commands:
-      - echo Continuous Integration Gate running...
+      - echo "Executing validation testing checks..."
       - pytest test_app.py
 
   build:
     commands:
-      - echo Quality threshold satisfied! Moving into continuous delivery...
-      - echo Syncing application files with target EC2 node via secure rsync protocol...
-      # CRITICAL: Replace "YOUR_EC2_PUBLIC_IP" with the public IP address generated in Phase 2
+      - echo "Syncing application repository with EC2 instance..."
       - rsync -avz -e "ssh -i ~/.ssh/id_rsa" --exclude '.git' ./ ubuntu@13.48.83.32:/home/ubuntu/app
-      - echo Triggering server restart configurations...
+      - echo "Executing server background environment refresh..."
       - ssh -i ~/.ssh/id_rsa ubuntu@13.48.83.32 "chmod +x /home/ubuntu/app/start_server.sh && /home/ubuntu/app/start_server.sh"
-      - echo Deployment pipeline iteration executed smoothly!
