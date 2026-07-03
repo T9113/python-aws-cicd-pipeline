@@ -1,11 +1,18 @@
 #!/bin/bash
+# 1. Jump to target workspace directory
 cd /home/ubuntu/app
 
-# Gracefully clear out any legacy process hooks occupying your public web Port 80
+# 2. Make sure the host has its package repositories up to date
+sudo apt update -y
+
+# 3. Ensure Pip is present on the machine
+sudo apt install python3-pip -y
+
+# 4. Wipe out any active processes competing for Web Port 80
 sudo kill -9 $(sudo lsof -t -i:80) || true
 
-# Synchronize virtual package layers
-pip install -r requirements.txt
+# 5. Install the updated application requirements safely
+sudo pip3 install -r requirements.txt --break-system-packages
 
-# Fire up your live application decoupled completely from active shell instances
+# 6. Boot the server background daemon completely detached
 sudo nohup python3 app.py > /dev/null 2>&1 &
