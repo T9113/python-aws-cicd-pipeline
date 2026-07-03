@@ -29,7 +29,7 @@ phases:
       - echo Quality threshold satisfied! Moving into continuous delivery...
       - echo Syncing application files with target EC2 node via secure rsync protocol...
       # CRITICAL: Replace "YOUR_EC2_PUBLIC_IP" with the public IP address generated in Phase 2
-      - rsync -avz -e "ssh -i ~/.ssh/id_rsa" --exclude '.git' ./ ubuntu@YOUR_EC2_PUBLIC_IP:/home/ubuntu/app
+      - rsync -avz -e "ssh -i ~/.ssh/id_rsa" --exclude '.git' ./ ubuntu@13.48.83.32:/home/ubuntu/app
       - echo Triggering server restart configurations...
-      - ssh -i ~/.ssh/id_rsa ubuntu@YOUR_EC2_PUBLIC_IP "chmod +x /home/ubuntu/app/start_server.sh && /home/ubuntu/app/start_server.sh"
+      - ssh -i ~/.ssh/id_rsa ubuntu@13.48.83.32 "chmod +x /home/ubuntu/app/start_server.sh && /home/ubuntu/app/start_server.sh"
       - echo Deployment pipeline iteration executed smoothly!
