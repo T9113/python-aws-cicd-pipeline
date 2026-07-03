@@ -7,8 +7,8 @@ env:
 
 phases:
   install:
-    runtime-versions:
-      python: 3.11
+  runtime-versions:
+    python: 3.11
     commands:
       - echo Setting up secure SSH execution credentials...
       - mkdir -p ~/.ssh
