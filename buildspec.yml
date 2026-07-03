@@ -1,0 +1,35 @@
+version: 0.2
+
+env:
+  parameter-store:
+    # CodeBuild securely downloads your private security key from your AWS Parameter Store at runtime
+    SSH_KEY: "/prod/ec2/private_key"
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.11
+    commands:
+      - echo Setting up secure SSH execution credentials...
+      - mkdir -p ~/.ssh
+      - echo "$SSH_KEY" > ~/.ssh/id_rsa
+      - chmod 600 ~/.ssh/id_rsa
+      - echo "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+      - echo Initializing CI dependency packages...
+      - python -m pip install --upgrade pip
+      - pip install -r requirements.txt
+
+  pre_build:
+    commands:
+      - echo Continuous Integration Gate running...
+      - pytest test_app.py
+
+  build:
+    commands:
+      - echo Quality threshold satisfied! Moving into continuous delivery...
+      - echo Syncing application files with target EC2 node via secure rsync protocol...
+      # CRITICAL: Replace "YOUR_EC2_PUBLIC_IP" with the public IP address generated in Phase 2
+      - rsync -avz -e "ssh -i ~/.ssh/id_rsa" --exclude '.git' ./ ubuntu@YOUR_EC2_PUBLIC_IP:/home/ubuntu/app
+      - echo Triggering server restart configurations...
+      - ssh -i ~/.ssh/id_rsa ubuntu@YOUR_EC2_PUBLIC_IP "chmod +x /home/ubuntu/app/start_server.sh && /home/ubuntu/app/start_server.sh"
+      - echo Deployment pipeline iteration executed smoothly!
